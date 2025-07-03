@@ -50,32 +50,32 @@ const Story = mongoose.model('Story', StorySchema);
 // --- ROUTES ---
 
 // Get all stories
-app.get('/stories', async (req, res) => {
+app.get('/api/stories', async (req, res) => {
   const stories = await Story.find();
   res.json(stories);
 });
 
 // Get one story by ID
-app.get('/stories/:id', async (req, res) => {
+app.get('/api/stories/:id', async (req, res) => {
   const story = await Story.findById(req.params.id);
   res.json(story);
 });
 
 // Create a new story
-app.post('/stories', async (req, res) => {
+app.post('/api/stories', async (req, res) => {
   const story = new Story(req.body);
   await story.save();
   res.status(201).json(story);
 });
 
 // Update a story by ID
-app.put('/stories/:id', async (req, res) => {
+app.put('/api/stories/:id', async (req, res) => {
   const updated = await Story.findByIdAndUpdate(req.params.id, req.body, { new: true });
   res.json(updated);
 });
 
 // Delete a story by ID
-app.delete('/stories/:id', async (req, res) => {
+app.delete('/api/stories/:id', async (req, res) => {
   await Story.findByIdAndDelete(req.params.id);
   res.json({ message: 'Story deleted' });
 });

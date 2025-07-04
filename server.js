@@ -80,6 +80,31 @@ app.delete('/api/stories/:id', async (req, res) => {
   res.json({ message: 'Story deleted' });
 });
 
+// Emotion Detection Route
+app.post('/api/analyze-emotion', async (req, res) => {
+  const { text } = req.body;
+
+  try {
+    const response = await fetch('https://api-inference.huggingface.co/models/j-hartmann/emotion-english-distilroberta-base', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`  // ✅ SAFER
+      },
+      body: JSON.stringify({ inputs: text })
+    });
+
+    const result = await response.json();
+    const topEmotion = result[0]?.[0]?.label?.toLowerCase();
+    console.log('Detected Emotion:', topEmotion);
+    res.json({ emotion: topEmotion || 'hopeful' });
+
+  } catch (err) {
+    console.error('Emotion detection failed:', err);
+    res.status(500).json({ emotion: 'hopeful' });
+  }
+});
+
 // --- START SERVER ---
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
@@ -89,26 +114,3 @@ app.listen(PORT, () => {
 
 
 
-
-
-
-const { OpenAI } = require('openai');
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-app.post('/api/analyze-emotion', async (req, res) => {
-  const { text } = req.body;
-  try {
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
-      messages: [
-        { role: 'system', content: 'You detect the emotional tone of text and respond with a single emotion like "hopeful", "melancholy", "rage", etc.' },
-        { role: 'user', content: text }
-      ],
-    });
-    const emotion = completion.choices[0].message.content.toLowerCase().trim();
-    res.json({ emotion });
-  } catch (err) {
-    console.error('Error analyzing emotion:', err);
-    res.status(500).json({ error: 'AI analysis failed' });
-  }
-});

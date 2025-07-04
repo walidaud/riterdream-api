@@ -85,3 +85,30 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });
+
+
+
+
+
+
+
+const { OpenAI } = require('openai');
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+app.post('/api/analyze-emotion', async (req, res) => {
+  const { text } = req.body;
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4',
+      messages: [
+        { role: 'system', content: 'You detect the emotional tone of text and respond with a single emotion like "hopeful", "melancholy", "rage", etc.' },
+        { role: 'user', content: text }
+      ],
+    });
+    const emotion = completion.choices[0].message.content.toLowerCase().trim();
+    res.json({ emotion });
+  } catch (err) {
+    console.error('Error analyzing emotion:', err);
+    res.status(500).json({ error: 'AI analysis failed' });
+  }
+});
